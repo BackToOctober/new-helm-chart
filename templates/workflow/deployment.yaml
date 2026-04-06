@@ -1,0 +1,37 @@
+{{- if .Values.workflow.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "dmp.fullname" . }}-workflow
+  labels:
+    {{- include "dmp.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: workflow
+spec:
+  replicas: {{ .Values.workflow.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "dmp.labels.matchLabels" . | nindent 6 }}
+      app.kubernetes.io/component: workflow
+  template:
+    metadata:
+      labels:
+        {{- include "dmp.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: workflow
+    spec:
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.global.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+      containers:
+        - name: workflow
+          image: {{ include "dmp.image" (dict "imageRoot" .Values.workflow.image "global" .Values.global) }}
+          imagePullPolicy: {{ .Values.workflow.image.pullPolicy }}
+          ports:
+            {{- range $key, $value := .Values.workflow.service.ports }}
+            - name: {{ $key }}
+              containerPort: {{ $value }}
+              protocol: TCP
+            {{- end }}
+{{- end }}

@@ -1,0 +1,37 @@
+{{- if .Values.dataStudio.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "dmp.fullname" . }}-data-studio
+  labels:
+    {{- include "dmp.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: data-studio
+spec:
+  replicas: {{ .Values.dataStudio.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "dmp.labels.matchLabels" . | nindent 6 }}
+      app.kubernetes.io/component: data-studio
+  template:
+    metadata:
+      labels:
+        {{- include "dmp.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: data-studio
+    spec:
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.global.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+      containers:
+        - name: data-studio
+          image: {{ include "dmp.image" (dict "imageRoot" .Values.dataStudio.image "global" .Values.global) }}
+          imagePullPolicy: {{ .Values.dataStudio.image.pullPolicy }}
+          ports:
+            {{- range $key, $value := .Values.dataStudio.service.ports }}
+            - name: {{ $key }}
+              containerPort: {{ $value }}
+              protocol: TCP
+            {{- end }}
+{{- end }}

@@ -1,0 +1,21 @@
+{{- if .Values.dataStudio.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "dmp.fullname" . }}-data-studio
+  labels:
+    {{- include "dmp.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: data-studio
+spec:
+  type: {{ .Values.dataStudio.service.type }}
+  ports:
+    {{- range $key, $value := .Values.dataStudio.service.ports }}
+    - port: {{ $value }}
+      targetPort: {{ $key }}
+      protocol: TCP
+      name: {{ $key }}
+    {{- end }}
+  selector:
+    {{- include "dmp.labels.matchLabels" . | nindent 4 }}
+    app.kubernetes.io/component: data-studio
+{{- end }}

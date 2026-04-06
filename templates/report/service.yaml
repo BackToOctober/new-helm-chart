@@ -1,0 +1,21 @@
+{{- if .Values.report.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "dmp.fullname" . }}-report
+  labels:
+    {{- include "dmp.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: report
+spec:
+  type: {{ .Values.report.service.type }}
+  ports:
+    {{- range $key, $value := .Values.report.service.ports }}
+    - port: {{ $value }}
+      targetPort: {{ $key }}
+      protocol: TCP
+      name: {{ $key }}
+    {{- end }}
+  selector:
+    {{- include "dmp.labels.matchLabels" . | nindent 4 }}
+    app.kubernetes.io/component: report
+{{- end }}

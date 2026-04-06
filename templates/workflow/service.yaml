@@ -1,0 +1,21 @@
+{{- if .Values.workflow.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "dmp.fullname" . }}-workflow
+  labels:
+    {{- include "dmp.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: workflow
+spec:
+  type: {{ .Values.workflow.service.type }}
+  ports:
+    {{- range $key, $value := .Values.workflow.service.ports }}
+    - port: {{ $value }}
+      targetPort: {{ $key }}
+      protocol: TCP
+      name: {{ $key }}
+    {{- end }}
+  selector:
+    {{- include "dmp.labels.matchLabels" . | nindent 4 }}
+    app.kubernetes.io/component: workflow
+{{- end }}

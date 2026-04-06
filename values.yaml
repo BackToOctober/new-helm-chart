@@ -1,0 +1,79 @@
+## @section Global parameters
+## Global Docker image parameters
+global:
+  imageRegistry: ""
+  ## E.g.
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  imagePullSecrets: []
+
+## @section SSO parameters
+sso:
+  ## @section SSO HTTP parameters
+  http:
+    replicaCount: 1
+    image:
+      registry: docker.io
+      repository: dmp/sso-http
+      tag: "latest"
+      pullPolicy: IfNotPresent
+    service:
+      type: ClusterIP
+      ports:
+        http: 80
+  
+  ## @section SSO Socket parameters
+  socket:
+    enabled: false
+    replicaCount: 1
+    image:
+      registry: docker.io
+      repository: dmp/sso-socket
+      tag: "latest"
+      pullPolicy: IfNotPresent
+    service:
+      type: ClusterIP
+      ports:
+        socket: 8080
+
+## @section Workflow parameters
+workflow:
+  enabled: false
+  replicaCount: 1
+  image:
+    registry: docker.io
+    repository: dmp/workflow
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    ports:
+      http: 80
+
+## @section Data Studio parameters
+dataStudio:
+  enabled: false
+  replicaCount: 1
+  image:
+    registry: docker.io
+    repository: dmp/data-studio
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    ports:
+      http: 80
+
+## @section Report parameters
+report:
+  enabled: false
+  replicaCount: 1
+  image:
+    registry: docker.io
+    repository: dmp/report
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    ports:
+      http: 80

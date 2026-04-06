@@ -1,0 +1,37 @@
+{{- if .Values.report.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "dmp.fullname" . }}-report
+  labels:
+    {{- include "dmp.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: report
+spec:
+  replicas: {{ .Values.report.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "dmp.labels.matchLabels" . | nindent 6 }}
+      app.kubernetes.io/component: report
+  template:
+    metadata:
+      labels:
+        {{- include "dmp.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/component: report
+    spec:
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.global.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+      containers:
+        - name: report
+          image: {{ include "dmp.image" (dict "imageRoot" .Values.report.image "global" .Values.global) }}
+          imagePullPolicy: {{ .Values.report.image.pullPolicy }}
+          ports:
+            {{- range $key, $value := .Values.report.service.ports }}
+            - name: {{ $key }}
+              containerPort: {{ $value }}
+              protocol: TCP
+            {{- end }}
+{{- end }}
