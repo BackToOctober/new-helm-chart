@@ -1,0 +1,20 @@
+{{- if .Values.sso.config.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "dmp.fullname" . }}-sso-config
+  labels:
+    {{- include "dmp.labels.standard" . | nindent 4 }}
+data:
+{{- if .Values.sso.config.data }}
+{{- range $key, $value := .Values.sso.config.data }}
+  {{ $key }}: {{ $value | quote }}
+{{- end }}
+{{- end }}
+{{- if .Values.sso.config.files }}
+{{- range $key, $value := .Values.sso.config.files }}
+  {{ $key }}: |-
+{{ $value | indent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}

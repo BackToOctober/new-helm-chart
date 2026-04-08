@@ -28,10 +28,39 @@ spec:
         - name: sso-socket
           image: {{ include "dmp.image" (dict "imageRoot" .Values.sso.socket.image "global" .Values.global) }}
           imagePullPolicy: {{ .Values.sso.socket.image.pullPolicy }}
+          {{- if .Values.sso.socket.livenessProbe.enabled }}
+          livenessProbe:
+            {{- omit .Values.sso.socket.livenessProbe "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.sso.socket.readinessProbe.enabled }}
+          readinessProbe:
+            {{- omit .Values.sso.socket.readinessProbe "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.sso.config.enabled }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "dmp.fullname" . }}-sso-config
+          {{- end }}
           ports:
             {{- range $key, $value := .Values.sso.socket.service.ports }}
             - name: {{ $key }}
               containerPort: {{ $value }}
               protocol: TCP
             {{- end }}
+          {{- if and .Values.sso.config.enabled .Values.sso.config.files }}
+          volumeMounts:
+            - name: sso-config-volume
+              mountPath: {{ .Values.sso.config.mountPath }}
+          {{- end }}
+      {{- if and .Values.sso.config.enabled .Values.sso.config.files }}
+      volumes:
+        - name: sso-config-volume
+          configMap:
+            name: {{ include "dmp.fullname" . }}-sso-config
+            items:
+            {{- range $key, $value := .Values.sso.config.files }}
+              - key: {{ $key }}
+                path: {{ $key }}
+            {{- end }}
+      {{- end }}
 {{- end }}

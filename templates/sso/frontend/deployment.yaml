@@ -1,21 +1,22 @@
+{{- if .Values.sso.frontend.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "dmp.fullname" . }}-sso-http
+  name: {{ include "dmp.fullname" . }}-sso-frontend
   labels:
     {{- include "dmp.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: sso-http
+    app.kubernetes.io/component: sso-frontend
 spec:
-  replicas: {{ .Values.sso.http.replicaCount }}
+  replicas: {{ .Values.sso.frontend.replicaCount }}
   selector:
     matchLabels:
       {{- include "dmp.labels.matchLabels" . | nindent 6 }}
-      app.kubernetes.io/component: sso-http
+      app.kubernetes.io/component: sso-frontend
   template:
     metadata:
       labels:
         {{- include "dmp.labels.standard" . | nindent 8 }}
-        app.kubernetes.io/component: sso-http
+        app.kubernetes.io/component: sso-frontend
     spec:
       {{- if .Values.global.imagePullSecrets }}
       imagePullSecrets:
@@ -23,25 +24,17 @@ spec:
         - name: {{ . }}
         {{- end }}
       {{- end }}
-      initContainers:
-        - name: init-sso
-          image: {{ include "dmp.image" (dict "imageRoot" .Values.sso.http.initContainer.image "global" .Values.global) }}
-          imagePullPolicy: {{ .Values.sso.http.initContainer.image.pullPolicy }}
-          {{- if .Values.sso.http.initContainer.command }}
-          command:
-            {{- toYaml .Values.sso.http.initContainer.command | nindent 12 }}
-          {{- end }}
       containers:
-        - name: sso-http
-          image: {{ include "dmp.image" (dict "imageRoot" .Values.sso.http.image "global" .Values.global) }}
-          imagePullPolicy: {{ .Values.sso.http.image.pullPolicy }}
-          {{- if .Values.sso.http.livenessProbe.enabled }}
+        - name: sso-frontend
+          image: {{ include "dmp.image" (dict "imageRoot" .Values.sso.frontend.image "global" .Values.global) }}
+          imagePullPolicy: {{ .Values.sso.frontend.image.pullPolicy }}
+          {{- if .Values.sso.frontend.livenessProbe.enabled }}
           livenessProbe:
-            {{- omit .Values.sso.http.livenessProbe "enabled" | toYaml | nindent 12 }}
+            {{- omit .Values.sso.frontend.livenessProbe "enabled" | toYaml | nindent 12 }}
           {{- end }}
-          {{- if .Values.sso.http.readinessProbe.enabled }}
+          {{- if .Values.sso.frontend.readinessProbe.enabled }}
           readinessProbe:
-            {{- omit .Values.sso.http.readinessProbe "enabled" | toYaml | nindent 12 }}
+            {{- omit .Values.sso.frontend.readinessProbe "enabled" | toYaml | nindent 12 }}
           {{- end }}
           {{- if .Values.sso.config.enabled }}
           envFrom:
@@ -49,7 +42,7 @@ spec:
                 name: {{ include "dmp.fullname" . }}-sso-config
           {{- end }}
           ports:
-            {{- range $key, $value := .Values.sso.http.service.ports }}
+            {{- range $key, $value := .Values.sso.frontend.service.ports }}
             - name: {{ $key }}
               containerPort: {{ $value }}
               protocol: TCP
@@ -70,3 +63,4 @@ spec:
                 path: {{ $key }}
             {{- end }}
       {{- end }}
+{{- end }}

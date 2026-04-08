@@ -12,6 +12,34 @@ sso:
   ## @section SSO HTTP parameters
   http:
     replicaCount: 1
+    initContainer:
+      image:
+        registry: docker.io
+        repository: busybox
+        tag: "latest"
+        pullPolicy: IfNotPresent
+      command:
+        - sh
+        - -c
+        - "echo 'Init step running...'; sleep 1"
+    livenessProbe:
+      enabled: true
+      httpGet:
+        path: /
+        port: http
+      initialDelaySeconds: 15
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readinessProbe:
+      enabled: true
+      httpGet:
+        path: /
+        port: http
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
     image:
       registry: docker.io
       repository: dmp/sso-http
@@ -26,6 +54,22 @@ sso:
   socket:
     enabled: false
     replicaCount: 1
+    livenessProbe:
+      enabled: true
+      tcpSocket:
+        port: socket
+      initialDelaySeconds: 15
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readinessProbe:
+      enabled: true
+      tcpSocket:
+        port: socket
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
     image:
       registry: docker.io
       repository: dmp/sso-socket
@@ -35,6 +79,67 @@ sso:
       type: ClusterIP
       ports:
         socket: 8080
+
+  ## @section SSO Frontend parameters
+  frontend:
+    enabled: true
+    replicaCount: 1
+    livenessProbe:
+      enabled: true
+      httpGet:
+        path: /
+        port: http
+      initialDelaySeconds: 15
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readinessProbe:
+      enabled: true
+      httpGet:
+        path: /
+        port: http
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    image:
+      registry: docker.io
+      repository: dmp/sso-frontend
+      tag: "latest"
+      pullPolicy: IfNotPresent
+    service:
+      type: ClusterIP
+      ports:
+        http: 80
+
+  ## @section SSO Ingress parameters
+  ingress:
+    enabled: true
+    hostname: sso.local
+    paths:
+      - path: /
+        pathType: ImplementationSpecific
+        service: sso-frontend
+        port: 80
+      - path: /api
+        pathType: ImplementationSpecific
+        service: sso-http
+        port: 80
+    tls: false
+    annotations: {}
+
+  ## @section SSO Config parameters
+  config:
+    enabled: true
+    mountPath: "/app/config"
+    data:
+      APP_ENV: "production"
+      LOG_LEVEL: "info"
+    files:
+      config_app.py: |-
+        # Default Python configuration
+        DEBUG = False
+        PORT = 8080
 
 ## @section Workflow parameters
 workflow:

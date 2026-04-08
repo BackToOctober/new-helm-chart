@@ -1,0 +1,192 @@
+---
+# Source: dmp-system/templates/sso/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dmp-sso-config
+  labels:
+    app.kubernetes.io/name: dmp
+    helm.sh/chart: dmp-system-0.1.0
+    app.kubernetes.io/instance: dmp
+    app.kubernetes.io/managed-by: Helm
+data:
+  APP_ENV: "production"
+  LOG_LEVEL: "info"
+  config_app.py: |-
+    # Default Python configuration
+    DEBUG = False
+    PORT = 8080
+---
+# Source: dmp-system/templates/sso/frontend/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: dmp-sso-frontend
+  labels:
+    app.kubernetes.io/name: dmp
+    helm.sh/chart: dmp-system-0.1.0
+    app.kubernetes.io/instance: dmp
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: sso-frontend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: dmp
+    app.kubernetes.io/instance: dmp
+    app.kubernetes.io/component: sso-frontend
+---
+# Source: dmp-system/templates/sso/http/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: dmp-sso-http
+  labels:
+    app.kubernetes.io/name: dmp
+    helm.sh/chart: dmp-system-0.1.0
+    app.kubernetes.io/instance: dmp
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: sso-http
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: dmp
+    app.kubernetes.io/instance: dmp
+    app.kubernetes.io/component: sso-http
+---
+# Source: dmp-system/templates/sso/frontend/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dmp-sso-frontend
+  labels:
+    app.kubernetes.io/name: dmp
+    helm.sh/chart: dmp-system-0.1.0
+    app.kubernetes.io/instance: dmp
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: sso-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dmp
+      app.kubernetes.io/instance: dmp
+      app.kubernetes.io/component: sso-frontend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dmp
+        helm.sh/chart: dmp-system-0.1.0
+        app.kubernetes.io/instance: dmp
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/component: sso-frontend
+    spec:
+      containers:
+        - name: sso-frontend
+          image: docker.io/dmp/sso-frontend:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: dmp-sso-config
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - name: sso-config-volume
+              mountPath: /app/config
+      volumes:
+        - name: sso-config-volume
+          configMap:
+            name: dmp-sso-config
+            items:
+              - key: config_app.py
+                path: config_app.py
+---
+# Source: dmp-system/templates/sso/http/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dmp-sso-http
+  labels:
+    app.kubernetes.io/name: dmp
+    helm.sh/chart: dmp-system-0.1.0
+    app.kubernetes.io/instance: dmp
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: sso-http
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dmp
+      app.kubernetes.io/instance: dmp
+      app.kubernetes.io/component: sso-http
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dmp
+        helm.sh/chart: dmp-system-0.1.0
+        app.kubernetes.io/instance: dmp
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/component: sso-http
+    spec:
+      containers:
+        - name: sso-http
+          image: docker.io/dmp/sso-http:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: dmp-sso-config
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - name: sso-config-volume
+              mountPath: /app/config
+      volumes:
+        - name: sso-config-volume
+          configMap:
+            name: dmp-sso-config
+            items:
+              - key: config_app.py
+                path: config_app.py
+---
+# Source: dmp-system/templates/sso/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dmp-sso
+  labels:
+    app.kubernetes.io/name: dmp
+    helm.sh/chart: dmp-system-0.1.0
+    app.kubernetes.io/instance: dmp
+    app.kubernetes.io/managed-by: Helm
+spec:
+  rules:
+    - host: sso.local
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: dmp-sso-frontend
+                port:
+                  number: 80
+          - path: /api
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: dmp-sso-http
+                port:
+                  number: 80

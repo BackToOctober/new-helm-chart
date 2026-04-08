@@ -1,0 +1,21 @@
+{{- if .Values.sso.frontend.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "dmp.fullname" . }}-sso-frontend
+  labels:
+    {{- include "dmp.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/component: sso-frontend
+spec:
+  type: {{ .Values.sso.frontend.service.type }}
+  ports:
+    {{- range $key, $value := .Values.sso.frontend.service.ports }}
+    - port: {{ $value }}
+      targetPort: {{ $key }}
+      protocol: TCP
+      name: {{ $key }}
+    {{- end }}
+  selector:
+    {{- include "dmp.labels.matchLabels" . | nindent 4 }}
+    app.kubernetes.io/component: sso-frontend
+{{- end }}

@@ -1,0 +1,26 @@
+{{- if .Values.sso.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "dmp.fullname" . }}-sso
+  labels:
+    {{- include "dmp.labels.standard" . | nindent 4 }}
+  {{- if .Values.sso.ingress.annotations }}
+  annotations:
+    {{- toYaml .Values.sso.ingress.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  rules:
+    - host: {{ .Values.sso.ingress.hostname }}
+      http:
+        paths:
+          {{- range .Values.sso.ingress.paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ include "dmp.fullname" $ }}-{{ .service }}
+                port:
+                  number: {{ .port }}
+          {{- end }}
+{{- end }}
