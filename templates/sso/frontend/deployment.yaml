@@ -30,11 +30,39 @@ spec:
           imagePullPolicy: {{ .Values.sso.frontend.image.pullPolicy }}
           {{- if .Values.sso.frontend.livenessProbe.enabled }}
           livenessProbe:
-            {{- omit .Values.sso.frontend.livenessProbe "enabled" | toYaml | nindent 12 }}
+            {{- if .Values.sso.frontend.livenessProbe.httpGet }}
+            httpGet:
+              path: {{ .Values.sso.frontend.livenessProbe.httpGet.path }}
+              port: {{ .Values.sso.frontend.livenessProbe.httpGet.port }}
+            {{- else if .Values.sso.frontend.livenessProbe.tcpSocket }}
+            tcpSocket:
+              port: {{ .Values.sso.frontend.livenessProbe.tcpSocket.port }}
+            {{- end }}
+            initialDelaySeconds: {{ .Values.sso.frontend.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.sso.frontend.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.sso.frontend.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.sso.frontend.livenessProbe.failureThreshold }}
+            {{- if .Values.sso.frontend.livenessProbe.successThreshold }}
+            successThreshold: {{ .Values.sso.frontend.livenessProbe.successThreshold }}
+            {{- end }}
           {{- end }}
           {{- if .Values.sso.frontend.readinessProbe.enabled }}
           readinessProbe:
-            {{- omit .Values.sso.frontend.readinessProbe "enabled" | toYaml | nindent 12 }}
+            {{- if .Values.sso.frontend.readinessProbe.httpGet }}
+            httpGet:
+              path: {{ .Values.sso.frontend.readinessProbe.httpGet.path }}
+              port: {{ .Values.sso.frontend.readinessProbe.httpGet.port }}
+            {{- else if .Values.sso.frontend.readinessProbe.tcpSocket }}
+            tcpSocket:
+              port: {{ .Values.sso.frontend.readinessProbe.tcpSocket.port }}
+            {{- end }}
+            initialDelaySeconds: {{ .Values.sso.frontend.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.sso.frontend.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.sso.frontend.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.sso.frontend.readinessProbe.failureThreshold }}
+            {{- if .Values.sso.frontend.readinessProbe.successThreshold }}
+            successThreshold: {{ .Values.sso.frontend.readinessProbe.successThreshold }}
+            {{- end }}
           {{- end }}
           {{- if .Values.sso.config.enabled }}
           envFrom:

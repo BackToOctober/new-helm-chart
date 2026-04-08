@@ -23,25 +23,45 @@ spec:
         - name: {{ . }}
         {{- end }}
       {{- end }}
-      initContainers:
-        - name: init-sso
-          image: {{ include "dmp.image" (dict "imageRoot" .Values.sso.http.initContainer.image "global" .Values.global) }}
-          imagePullPolicy: {{ .Values.sso.http.initContainer.image.pullPolicy }}
-          {{- if .Values.sso.http.initContainer.command }}
-          command:
-            {{- toYaml .Values.sso.http.initContainer.command | nindent 12 }}
-          {{- end }}
       containers:
         - name: sso-http
           image: {{ include "dmp.image" (dict "imageRoot" .Values.sso.http.image "global" .Values.global) }}
           imagePullPolicy: {{ .Values.sso.http.image.pullPolicy }}
           {{- if .Values.sso.http.livenessProbe.enabled }}
           livenessProbe:
-            {{- omit .Values.sso.http.livenessProbe "enabled" | toYaml | nindent 12 }}
+            {{- if .Values.sso.http.livenessProbe.httpGet }}
+            httpGet:
+              path: {{ .Values.sso.http.livenessProbe.httpGet.path }}
+              port: {{ .Values.sso.http.livenessProbe.httpGet.port }}
+            {{- else if .Values.sso.http.livenessProbe.tcpSocket }}
+            tcpSocket:
+              port: {{ .Values.sso.http.livenessProbe.tcpSocket.port }}
+            {{- end }}
+            initialDelaySeconds: {{ .Values.sso.http.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.sso.http.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.sso.http.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.sso.http.livenessProbe.failureThreshold }}
+            {{- if .Values.sso.http.livenessProbe.successThreshold }}
+            successThreshold: {{ .Values.sso.http.livenessProbe.successThreshold }}
+            {{- end }}
           {{- end }}
           {{- if .Values.sso.http.readinessProbe.enabled }}
           readinessProbe:
-            {{- omit .Values.sso.http.readinessProbe "enabled" | toYaml | nindent 12 }}
+            {{- if .Values.sso.http.readinessProbe.httpGet }}
+            httpGet:
+              path: {{ .Values.sso.http.readinessProbe.httpGet.path }}
+              port: {{ .Values.sso.http.readinessProbe.httpGet.port }}
+            {{- else if .Values.sso.http.readinessProbe.tcpSocket }}
+            tcpSocket:
+              port: {{ .Values.sso.http.readinessProbe.tcpSocket.port }}
+            {{- end }}
+            initialDelaySeconds: {{ .Values.sso.http.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.sso.http.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.sso.http.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.sso.http.readinessProbe.failureThreshold }}
+            {{- if .Values.sso.http.readinessProbe.successThreshold }}
+            successThreshold: {{ .Values.sso.http.readinessProbe.successThreshold }}
+            {{- end }}
           {{- end }}
           {{- if .Values.sso.config.enabled }}
           envFrom:
