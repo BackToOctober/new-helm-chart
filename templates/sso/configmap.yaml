@@ -17,4 +17,10 @@ data:
 {{ $value | indent 4 }}
 {{- end }}
 {{- end }}
+{{- if .Values.sso.configOverrides }}
+{{- range $key, $value := .Values.sso.configOverrides }}
+  {{ $key }}: |-
+{{ $value | indent 4 }}
+{{- end }}
+{{- end }}
 {{- end }}

@@ -26,6 +26,21 @@ spec:
       containers:
         - name: sso-http
           image: {{ include "dmp.image" (dict "imageRoot" .Values.sso.http.image "global" .Values.global) }}
+
+          {{- if or .Values.sso.extraEnv .Values.sso.extraSecretEnv }}
+          env:
+            {{- range $key, $value := .Values.sso.extraEnv }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- range $key, $value := .Values.sso.extraSecretEnv }}
+            - name: {{ $key | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "dmp.fullname" $ }}-sso-env
+                  key: {{ $key | quote }}
+            {{- end }}
+          {{- end }}
           imagePullPolicy: {{ .Values.sso.http.image.pullPolicy }}
           {{- if .Values.sso.http.livenessProbe.enabled }}
           livenessProbe:
@@ -84,9 +99,4 @@ spec:
         - name: sso-config-volume
           configMap:
             name: {{ include "dmp.fullname" . }}-sso-config
-            items:
-            {{- range $key, $value := .Values.sso.config.files }}
-              - key: {{ $key }}
-                path: {{ $key }}
-            {{- end }}
       {{- end }}

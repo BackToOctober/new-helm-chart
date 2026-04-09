@@ -1,0 +1,7 @@
+job:
+  image: busybox:latest
+  sleepSeconds: 10
+
+deployment:
+  replicaCount: 1
+  image: nginx:latest

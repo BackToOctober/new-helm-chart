@@ -9,6 +9,16 @@ global:
 
 ## @section SSO parameters
 sso:
+  ## SSO Global Extras
+  # format: {"VAR_NAME": "value"}
+  extraEnv: {}
+  
+  # format: {"SECRET_NAME": "secret_value"}
+  extraSecretEnv: {}
+  
+  # format: {"config_file.py": "content..."}
+  configOverrides: {}
+
   ## @section SSO HTTP parameters
   http:
     replicaCount: 1

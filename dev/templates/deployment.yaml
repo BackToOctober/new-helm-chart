@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-main-deploy
+  labels:
+    app.kubernetes.io/name: dev-chart-deploy
+spec:
+  replicas: {{ .Values.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dev-chart-deploy
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dev-chart-deploy
+    spec:
+      containers:
+        - name: app
+          image: {{ .Values.deployment.image }}
+          ports:
+            - containerPort: 80

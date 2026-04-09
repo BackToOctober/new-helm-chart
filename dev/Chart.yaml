@@ -1,0 +1,5 @@
+apiVersion: v2
+name: dev-chart
+description: A basic test chart with Job and Deployment to test Helm hook dependencies
+type: application
+version: 0.1.0

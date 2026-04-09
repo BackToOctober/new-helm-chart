@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-init-job
+  labels:
+    app.kubernetes.io/name: dev-chart-job
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 0 # Tắt retry khi gặp lỗi
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dev-chart-job
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: sleep-container
+          image: {{ .Values.job.image }}
+          command: ["sh", "-c"]
+{{/*          args: ["echo 'Sleeping for {{ .Values.job.sleepSeconds }} seconds...'; sleep {{ .Values.job.sleepSeconds }}; echo 'Done!'"]*/}}
+          args: ["exit 137"]
