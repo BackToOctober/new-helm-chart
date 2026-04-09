@@ -18,6 +18,7 @@ spec:
         {{- include "dmp.labels.standard" . | nindent 8 }}
         app.kubernetes.io/component: sso-frontend
     spec:
+      serviceAccountName: {{ include "sso.serviceAccountName" . }}
       {{- if .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- range .Values.global.imagePullSecrets }}

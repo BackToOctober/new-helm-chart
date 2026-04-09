@@ -10,6 +10,9 @@ metadata:
     {{- toYaml .Values.sso.ingress.annotations | nindent 4 }}
   {{- end }}
 spec:
+  {{- if .Values.sso.ingress.ingressClassName }}
+  ingressClassName: {{ .Values.sso.ingress.ingressClassName | quote }}
+  {{- end }}
   {{- if .Values.sso.ingress.tls }}
   tls:
     {{- range .Values.sso.ingress.tls }}

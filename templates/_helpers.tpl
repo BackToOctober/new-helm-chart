@@ -41,3 +41,14 @@ Match labels
 app.kubernetes.io/name: {{ default .Chart.Name .Release.Name | trunc 63 | trimSuffix "-" }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
+
+{{/*
+Create the name of the service account to use for SSO
+*/}}
+{{- define "sso.serviceAccountName" -}}
+{{- if .Values.sso.serviceAccount.create }}
+{{- default (printf "%s-sso" (include "dmp.fullname" .)) .Values.sso.serviceAccount.name }}
+{{- else }}
+{{- default "default" .Values.sso.serviceAccount.name }}
+{{- end }}
+{{- end }}

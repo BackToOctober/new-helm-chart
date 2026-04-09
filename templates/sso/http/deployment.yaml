@@ -17,11 +17,27 @@ spec:
         {{- include "dmp.labels.standard" . | nindent 8 }}
         app.kubernetes.io/component: sso-http
     spec:
+      serviceAccountName: {{ include "sso.serviceAccountName" . }}
       {{- if .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- range .Values.global.imagePullSecrets }}
         - name: {{ . }}
         {{- end }}
+      {{- end }}
+      {{- if .Values.sso.postgresql.waitForPostgresql.enabled }}
+      initContainers:
+        - name: wait-for-postgresql
+          image: {{ include "dmp.image" (dict "imageRoot" .Values.sso.postgresql.waitForPostgresql.image "global" .Values.global) }}
+          imagePullPolicy: {{ .Values.sso.postgresql.waitForPostgresql.image.pullPolicy }}
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z {{ .Values.sso.postgresql.host }} {{ .Values.sso.postgresql.port }}; do
+                echo "Waiting for PostgreSQL at {{ .Values.sso.postgresql.host }}:{{ .Values.sso.postgresql.port }}..."
+                sleep 2
+              done
+              echo "PostgreSQL is ready!"
       {{- end }}
       containers:
         - name: sso-http

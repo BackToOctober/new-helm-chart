@@ -9,7 +9,23 @@ global:
 
 ## @section SSO parameters
 sso:
+  postgresql:
+    host: "postgresql.default.svc.cluster.local"
+    port: 5432
+    waitForPostgresql:
+      enabled: true
+      image:
+        registry: docker.io
+        repository: busybox
+        tag: "latest"
+        pullPolicy: IfNotPresent
+
   ## SSO Global Extras
+  serviceAccount:
+    create: true
+    name: ""
+    annotations: {}
+
   # format: {"VAR_NAME": "value"}
   extraEnv: {}
   
@@ -125,6 +141,7 @@ sso:
   ## @section SSO Ingress parameters
   ingress:
     enabled: true
+    ingressClassName: ""
     hostname: sso.local
     paths:
       - path: /
