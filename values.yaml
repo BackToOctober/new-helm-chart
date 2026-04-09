@@ -135,7 +135,18 @@ sso:
         pathType: ImplementationSpecific
         service: sso-http
         port: 80
-    tls: false
+    tls: []
+    #  - secretName: sso-tls
+    #    hosts:
+    #      - sso.local
+    tlsSecret:
+      enabled: false
+      cert: |-
+        -----BEGIN CERTIFICATE-----
+        ...
+      key: |-
+        -----BEGIN PRIVATE KEY-----
+        ...
     annotations: {}
 
   ## @section SSO Config parameters

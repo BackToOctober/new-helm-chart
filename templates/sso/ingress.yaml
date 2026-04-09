@@ -10,6 +10,18 @@ metadata:
     {{- toYaml .Values.sso.ingress.annotations | nindent 4 }}
   {{- end }}
 spec:
+  {{- if .Values.sso.ingress.tls }}
+  tls:
+    {{- range .Values.sso.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      {{- if .secretName }}
+      secretName: {{ .secretName }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
   rules:
     - host: {{ .Values.sso.ingress.hostname }}
       http:
